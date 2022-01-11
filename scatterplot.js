@@ -1,5 +1,4 @@
-// const datas= [[1990, 45], [2000, 9],[2015, 345]];
-const h = 750;
+const h = 650;
 const w = 900;
 const padding = 50;
 
@@ -10,7 +9,16 @@ document.addEventListener('DOMContentLoaded', function(){
     req.onload = function(){
       const datas = JSON.parse(req.responseText);
 
-// const datas = json.data;
+d3.select("body")
+  .append("h1")
+  .attr("id", "title")
+  .style("padding","10px")
+  .text("Scatterplot of Doper Bicyclists")
+
+d3.select("body")
+  .append("h2")
+  .style("padding","10px")
+  .text("The Fast and the Fraudulent")
 
 const svg = d3.select("body")
   .append("svg")
@@ -28,33 +36,17 @@ const format = "%M:%S";
 var parsedData = datas.map(function(d) {
     return d3.timeParse(format)(d.Time)
   });
- 
-const minSecs = datas.map(function(d) {
-  return d.Time;
-  });
   
-const dataObj = datas.map(function(d) {
-    return d;
-    });
-  
-console.log(dataObj);
-const yScale = d3.scaleLinear(datas)
-  .domain(d3.extent(parsedData))
-  //[40,36.5]
-    //   d3.min(datas, (d)=> d.Time), d3.min(datas, (d)=> d.Time)])
+const minY=new Date(0,0,0,0,d3.min(parsedData).getMinutes(),d3.min(parsedData).getSeconds());
+const maxY= new Date(0,0,0,0,d3.max(parsedData).getMinutes(),d3.max(parsedData).getSeconds())
+
+const yScale = d3.scaleTime(datas)
+  .domain([minY, maxY])
   .range([h-padding, padding]);
-
-//   let thing2 = datas[0].Time.d3.time.format("%M:%S")
-//   new Date(0, 0, 0, 0, datas[0].Time);
-//   let thing2 = new Date(0, 0, 0, 0, (datas[0]).split(":")[0], (datas[0]).split(":")[1]);
-//   console.log(d3.extent(parsedData));
   
-
-
 const xAxis = d3.axisBottom(xScale);
-const yAxis = d3.axisLeft(yScale).tickFormat(function(d){
-    return d3.timeFormat(format)(d)
-});
+const yAxis = d3.axisLeft(yScale)
+.tickFormat(d3.timeFormat(format));
 
 svg.append("g")
   .attr("transform", "translate(0," + (h-padding) + ")")
@@ -90,20 +82,25 @@ svg.selectAll("circle")
   .attr("class", "dot")
   .style("fill",function(d) {if (d.Doping == "") { return"green"}else{ return "orange"}})
   .attr("data-xvalue", (d)=>d.Year)
-  .attr("data-yvalue", (d)=>d3.timeParse(format)(d.Time))
-  .attr("dataObj", (d)=>{d})
-//   .getMinutes() + ":" + d3.timeParse(format)(d.Time).getSeconds()<10 ? 00 : 23)
+  .attr("data-yvalue", (d)=>new Date(0, 0, 0, 0, d.Time.split(":")[0], d.Time.split(":")[1]))
+  .attr("time", (d)=>d.Time)
+  .attr("nation", (d)=>d.Nationality)
+  .attr("data-dope", function(d) {if (d.Doping == ""){return "No doping allegations"}else{return d.Doping}})
+  .attr("data-name", (d)=>d.Name)
   .attr("index", (d, i)=> i)
   .attr("cx", (d)=> xScale(new Date(d.Year, 0)))
-  .attr("cy", (d)=> yScale(d3.timeParse(format)(d.Time)))
+  .attr("cy", (d)=> yScale(new Date(0, 0, 0, 0, d.Time.split(":")[0], d.Time.split(":")[1])))
+    // d3.timeParse(format)(d.Time)))
   .attr("r", "7px")
   .on("mouseover", function(d, event){
     let date = this.getAttribute('data-xvalue');
-    let time = this.getAttribute("data-yvalue");
-    // const doping(d) = (d) => d.Doping;
-    // console.log(this.getAttribute("dataObj"));
+    let time = this.getAttribute('time');
+    let nation = this.getAttribute('nation')
+    let doping = this.getAttribute('data-dope');
+    let name = this.getAttribute('data-name');
     tooltip.style("visibility", "visible")
-      .html(date + ": <br>" + time )
+      .html(name + "- " + nation + ",  " + date + "<br> Time: " + time + "<br>" + doping)
+      .style("line-height", "1.5")
       .attr("data-year", date) 
       .attr("data-yvalue", time)})
   .on("mousemove", function(e, d){var index = this.getAttribute("index");
@@ -111,16 +108,48 @@ svg.selectAll("circle")
     ;})
   .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 
-svg.append("rect")
+d3.select("body")
+  .append("h3")
+  .text("Legend: ");
+
+d3.select("body")
+  .append("svg")
   .attr("id", "legend")
   .attr("height", "100px")
-  .attr("width", "200px")
-  .attr("fill", "blue")
-  .attr("stroke", "green")
-  .attr("x", "650px")
-  .attr("y", "500px")
-  .append("h2")
-  .text("legend")
-  .style("color", "green")
+  .attr("width", "260px")
+  .style("display", "flex")
+  .style("flex-wrap", "wrap");
+
+d3.select("#legend")
+  .append("rect")
+  .attr("height", "20px")
+  .attr("width", "20px")
+  .style("fill", "green" )
+  .style("stroke", "black")
+  .style("border", "1px solid black");
+  
+d3.select("body")
+  .append("p")
+  .style("top", "562px")
+  .style("right", "205px")
+  .style("position", "absolute")
+  .text(":  No Doping Allegations");
+
+  d3.select("#legend")
+  .append("rect")
+  .attr("height", "20px")
+  .attr("width", "20px")
+  .style("fill", "orange")
+  .style("stroke", "black")
+  .attr("y", "40px")
+  .style("border", "1px solid black");
+
+  d3.select("body")
+  .append("p")
+  .style("top", "602px")
+  .style("right", "170px")
+  .style("position", "absolute")
+  .html(":  Doping Allegations Present")
+
    }
 });

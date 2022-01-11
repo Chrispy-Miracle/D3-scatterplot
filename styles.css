@@ -5,11 +5,36 @@
     font-family: sans-serif;
     text-align: center;
 }
+body {
+    background: rgb(147, 147, 243);
+}
+svg {
+    background:rgb(198, 198, 238);
+}
+h1 {
+    color: indigo;
+    text-shadow: 2px 2px 2px rgb(234, 156, 236);
+    text-transform: uppercase;
+}
+h2 {
+    color: rgb(198, 198, 238);
+    text-shadow: 2px 2px 2px indigo;
+
+}
 .dot {
-    /* fill: green; */
     stroke: black;
     stroke-width: 1px;
 }
-h2 {
+#legend {
+    position: absolute;
+    top: 550px;
+    right:155px;
+    border: 1px solid black;
+    padding: 10px;
+}
+h3 {
+    position: absolute;
+    top: 520px;
+    right:250px;
     color:green;
 }
